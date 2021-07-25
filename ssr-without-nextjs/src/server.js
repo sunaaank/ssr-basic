@@ -1,19 +1,20 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { ServerStyleSheet } from "styled-components";
-import { renderToString } from "react-dom/server";
-import React from "react";
-import App from "./App";
+import { renderPage, prerenderPages } from "./common";
 
 // 📧 미들웨어, url경로 설정 가능
 const app = express();
 
-// webpack 빌드 후 생성되는 html 파일을 가져온다
-const html = fs.readFileSync(
-  path.resolve(__dirname, "../dist/index.html"),
-  "utf8"
-);
+// prerender.js 파일이 실행될 때 미리 렌더링 해놓은 페이지를 prerenderHtml 객체에 저장
+const prerenderHtml = {};
+for (const page of prerenderPages) {
+  const pageHtml = fs.readFileSync(
+    path.resolve(__dirname, `../dist/${page}.html`),
+    "utf8"
+  );
+  prerenderHtml[page] = pageHtml;
+}
 
 // url이 dist로 시작하는 경우, dist 폴더 밑에 있는 정적 파일로 연결한다
 app.use("/dist", express.static("dist"));
@@ -32,24 +33,16 @@ app.get("*", (req, res) => {
   // 📧 pathname 앞 슬러시를 제거해 page 변수를 받는다
   const page = parsedUrl.pathname ? parsedUrl.pathname.substr(1) : "home";
 
-  // 🎨 스타일을 추출하는 데 사용될 객체를 생성한다
-  const sheet = new ServerStyleSheet();
-
-  // 📧 url로부터 계산된 페이지 정보를 App 컴포넌트에 Props로 사용한다
-  // 🎨 collectStyles 메서드에 리액트 요소를 입력하면 스타일 정보를 수집하기 위한 코드가 리액트 요소에 삽입됨
-  // 🎨 실제 스타일 정보는 renderToString 함수의 호출이 끝나야 수집할 수 있음
-  const renderString = renderToString(sheet.collectStyles(<App page={page} />));
-
-  //  🎨 getStyleTags 메서드를 호출하면 스타일 정보가 추출됨
-  const styles = sheet.getStyleTags();
   const initialData = { page };
 
-  // 렌더링 결과를 반영해서 HTML을 완성한다
-  // HTML 파일을 클라이언트에 전송한다
-  const result = html
-    .replace(`<div id="root'></div>`, `<div id="root">${renderString}</div>`)
-    .replace("__DATA_FROM_SERVER__", JSON.stringify(initialData))
-    .replace("__STYLE_FROM_SERVER__", styles);
+  // 미리 렌더링된 페이지가 아닌 경우에만 새로 렌더링한다.
+  const pageHtml = prerenderPages.includes(page)
+    ? prerenderHtml[page]
+    : renderPage(page);
+  const result = pageHtml.replace(
+    "__DATA_FROM_SERVER__",
+    JSON.stringify(initialData)
+  );
   res.send(result);
 });
 

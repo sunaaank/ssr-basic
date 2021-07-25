@@ -2,11 +2,9 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const nodeExternals = require("webpack-node-externals");
 
-function getConfig(isServer) {
+function getConfig(isServer, name) {
   return {
-    entry: isServer
-      ? { server: "./src/server.js" }
-      : { main: "./src/index.js" },
+    entry: { [name]: `./src/${name}` },
     output: {
       // 클라이언트는 브라우저의 캐싱효과때문에 chunkhash사용
       filename: isServer ? "[name].bundle.js" : "[name].[chunkhash].js",
@@ -64,4 +62,8 @@ function getConfig(isServer) {
   };
 }
 
-module.exports = [getConfig(false), getConfig(true)];
+module.exports = [
+  getConfig(false, "index"),
+  getConfig(true, "server"),
+  getConfig(true, "prerender"),
+];

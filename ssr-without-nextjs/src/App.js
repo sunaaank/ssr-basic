@@ -5,8 +5,18 @@ import About from "./About";
 import Icon from "./icon.png";
 
 const Container = styled.div`
-  background-color: #aaaaaa;
-  border: 1px solid blue;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #212529;
+  border: 1px solid #f8f9fa;
+  color: #f8f9fa;
+
+  > img {
+    width: 300px;
+    height: 300px;
+    margin: 10px;
+  }
 `;
 
 export default function App({ pageProp }) {
@@ -29,6 +39,11 @@ export default function App({ pageProp }) {
   // page 상태값에 따라 렌더링할 페이지의 컴포넌트가 결정됨.
   const PageComponent = page === "home" ? Home : About;
 
+  const [username, setUsername] = useState(null);
+  useEffect(() => {
+    fetchUsername().then(data => setUsername(data));
+  }, []);
+
   return (
     <Container>
       <img src={Icon} />
@@ -38,7 +53,15 @@ export default function App({ pageProp }) {
       <button data-page="about" onClick={onChangePage}>
         About
       </button>
-      <PageComponent />
+      <PageComponent username={username} />
     </Container>
   );
+}
+
+function fetchUsername() {
+  const usernames = ["React", "Express", "Node.js"];
+  return new Promise(resolve => {
+    const username = usernames[Math.floor(Math.random() * 3)];
+    setTimeout(() => resolve(username), 100);
+  });
 }
