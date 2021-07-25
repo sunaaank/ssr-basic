@@ -1,8 +1,14 @@
 import express from "express";
+import LRUCache from "lru-cache";
 import fs from "fs";
 import path from "path";
 import { renderPage, prerenderPages } from "./common";
 
+const ssrCache = new LRUCache({
+  // 💰 최대 100개의 페이지 캐싱, 각 아이템은 60초 동안 캐싱
+  max: 100,
+  maxAge: 1000 * 60,
+});
 // 📧 미들웨어, url경로 설정 가능
 const app = express();
 
@@ -28,6 +34,14 @@ app.get("*", (req, res) => {
 
   // 📧 parsedUrl: url경로, 쿼리 파라미터 등 정보를 갖고 있음
   const parsedUrl = new URL(req.url, baseURL);
+  // 💰 cacheKey: 쿼리파라미터를 포함하는 url
+  const cacheKey = parsedUrl.path;
+  // 💰 캐시가 존재한다면 캐싱된 값을 사용한다.
+  if (ssrCache.has(cacheKey)) {
+    console.log("캐시 사용");
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
 
   // 📧 subStr(1): 1번째 위치 이후에서 시작해 문자열을 반환한다.
   // 📧 pathname 앞 슬러시를 제거해 page 변수를 받는다
@@ -43,6 +57,8 @@ app.get("*", (req, res) => {
     "__DATA_FROM_SERVER__",
     JSON.stringify(initialData)
   );
+  // 💰 캐시가 존재하지 않으면 SSR 후 그 결과를 캐시에 저장한다
+  ssrCache.set(cacheKey, result);
   res.send(result);
 });
 
