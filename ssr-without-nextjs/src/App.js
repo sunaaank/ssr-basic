@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import Home from "./Home";
 import About from "./About";
+import Icon from "./icon.png";
+
+const Container = styled.div`
+  background-color: #aaaaaa;
+  border: 1px solid blue;
+`;
 
 export default function App({ pageProp }) {
   const [page, setPage] = useState(pageProp);
@@ -23,7 +30,8 @@ export default function App({ pageProp }) {
   const PageComponent = page === "home" ? Home : About;
 
   return (
-    <div className="container">
+    <Container>
+      <img src={Icon} />
       <button data-page="home" onClick={onChangePage}>
         Home
       </button>
@@ -31,6 +39,6 @@ export default function App({ pageProp }) {
         About
       </button>
       <PageComponent />
-    </div>
+    </Container>
   );
 }
