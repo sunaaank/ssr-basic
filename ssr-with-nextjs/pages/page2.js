@@ -9,12 +9,19 @@ Page2.getInitialProps = async ({ query }) => {
 };
 
 export default function Page2({ text, data }) {
+  function onClick() {
+    import("../src/sayHello.js").then(({ sayHello }) =>
+      console.log(sayHello())
+    );
+  }
+
   return (
     <div>
       <p>this is home page2</p>
       <p>{`text: ${text}`}</p>
       <p>{`data is ${data}`}</p>
       <button onClick={() => Router.push("/page1")}>page1로 이동</button>
+      <button onClick={onClick}>sayHello</button>
     </div>
   );
 }
