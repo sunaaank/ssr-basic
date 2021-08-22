@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { add } from "../src/util.js";
 import Icon from "../public/static/icon.png";
 
 function Page1() {
@@ -9,6 +10,7 @@ function Page1() {
         <a>page2로 이동</a>
       </Link>
       <p>This is home page</p>
+      <p>{`10 + 20 = ${add(10, 20)}`}</p>
       <img src={Icon} />
       <Head>
         <title>page1</title>
