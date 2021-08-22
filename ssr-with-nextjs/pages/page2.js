@@ -1,3 +1,4 @@
+import Router from "next/router";
 import { callApi } from "../src/api.js";
 
 Page2.getInitialProps = async ({ query }) => {
@@ -12,6 +13,7 @@ export default function Page2({ text, data }) {
       <p>this is home page2</p>
       <p>{`text: ${text}`}</p>
       <p>{`data is ${data}`}</p>
+      <button onClick={() => Router.push("/page1")}>page1로 이동</button>
     </div>
   );
 }
