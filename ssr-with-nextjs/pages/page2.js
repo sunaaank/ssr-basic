@@ -2,7 +2,7 @@ import Router from "next/router";
 import { callApi } from "../src/api.js";
 
 Page2.getInitialProps = async ({ query }) => {
-  throw new Error("exception in getInitialProps");
+  // throw new Error("exception in getInitialProps");
   const text = query.text || "none";
   const data = await callApi();
   return { text, data };

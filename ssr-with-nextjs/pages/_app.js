@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
-function App({ userAgent }) {
+function App({ Component, pageProps, userAgent }) {
   // const [isIE, setIsIE] = useState(false);
   // const [isChrome, SetIsChrome] = useState(false);
-  console.log("_app userAgent:", userAgent);
 
   // useEffect(() => {
   //   const IE = navigator.userAgent.match(/MSIE|rv:|IEMobile/i);
@@ -17,14 +17,21 @@ function App({ userAgent }) {
 
   return (
     <div>
+      <Link href="/page1">
+        <a>page1</a>
+      </Link>
+      <Link href="/page2">
+        <a>page2</a>
+      </Link>
       <h1>HOME</h1>
+      <Component {...pageProps} />
     </div>
   );
 }
 
-App.getInitialProps = async ({ req }) => {
-  const userAgent = req ? req.headers["user-agent"] : navigator.userAgent;
-  return { userAgent };
-};
+// App.getInitialProps = async ({ req }) => {
+//   const userAgent = req ? req.headers["user-agent"] : navigator.userAgent;
+//   return { userAgent };
+// };
 
 export default App;
