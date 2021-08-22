@@ -46,6 +46,25 @@ app.prepare().then(() => {
   });
 });
 
+const fs = require("fs");
+
+const prerenderList = [
+  { name: "page1", path: "/page1" },
+  { name: "page2-hello", path: "/page2?text=hello" },
+  { name: "page2-world", path: "/page2?text=world" },
+];
+
+// out 폴더에 있는 미리 렌더링된 HTML 파일을 읽어서 prerenderCache에 저장함.
+// next export 명령어는 프로덕션 모드에서만 사용하므로 out 폴더 내용을 읽는 작업은 프로덕션 모드에서만 함
+const prerenderCache = {};
+if (!dev) {
+  for (const info of prerenderList) {
+    const { name, path } = info;
+    const html = fs.readFileSync(`./out/${name}.html`, "utf8");
+    prerenderCache[`/${name}`] = html;
+  }
+}
+
 async function renderAndCache(req, res) {
   const parsedUrl = url.parse(req.url, true);
   // 쿼리 파라미터가 포함된 경로를 키로 사용함
@@ -54,7 +73,14 @@ async function renderAndCache(req, res) {
   // 캐시가 존재하면 캐시에 저장된 값을 사용함
   if (ssrCache.has(cacheKey)) {
     console.log("캐시 사용");
-    res.getRequestHandler(ssrCache.get(cacheKey));
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+
+  // prerenderCache 이용, 미리 렌더링한 페이지라면 캐싱된 HTML 사용
+  if (prerenderCache.hasOwnProperty(cacheKey)) {
+    console.log("미리 랜더링한 HTML 사용");
+    res.send(prerenderCache[cacheKey]);
     return;
   }
 
